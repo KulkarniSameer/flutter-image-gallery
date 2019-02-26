@@ -4,15 +4,13 @@ import 'dart:convert';
 
 void main() => runApp(App());
 
-final baseUrl = "https://picsum.photos/400/400?image=";
+final baseUrl = "https://picsum.photos/500/500?image=";
 
 class App extends StatelessWidget {
   @override
   Widget build(BuildContext ctx) {
     return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.amber,
-      ),
+      theme: ThemeData(primarySwatch: Colors.amber,),
       home: Home(),
     );
   }
@@ -47,23 +45,20 @@ class _HomeState extends State<Home> {
               delegate: SliverChildBuilderDelegate(
                 (BuildContext ctx, int index) {
                   return GestureDetector(
-                    child: Card(
-                      child: new GridTile(
-                        child: Center(
-                          child: Image.network(
-                            baseUrl + '${images[index].id}',
-                          ),
-                        ),
+                    child: GridTile(
+                      child: Hero(
+                        tag: 'IMG_${images[index].id}',
+                        child: Image.network(
+                          baseUrl + '${images[index].id}',
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                        )
                       ),
                     ),
                     onTap: () {
-                      Navigator.push(
-                        ctx,
-                        MaterialPageRoute(
-                          builder: (ctx) => Details(
-                            images: images,
-                            currImgIdx: index,
-                          )
+                      Navigator.push(ctx,
+                        MaterialPageRoute(builder: (ctx) => Details(
+                            images: images, currImgIdx: index,)
                         )
                       );
                     },
@@ -72,7 +67,9 @@ class _HomeState extends State<Home> {
                 childCount: images.length,
               ),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2
+                crossAxisCount: 2,
+                crossAxisSpacing: 8.0,
+                mainAxisSpacing: 8.0,
               ),
             );
           } else {
@@ -80,8 +77,7 @@ class _HomeState extends State<Home> {
               child: Container(
                 height: 500.0,
                 child: Center(
-                  child: snapshot.hasError
-                    ? Text("Oops! Something went wrong.")
+                  child: snapshot.hasError ? Text("Oops! Something went wrong.")
                     : CircularProgressIndicator(),
                 ),
               ),
@@ -140,27 +136,26 @@ class _DetailsState extends State<Details> {
       backgroundColor: Colors.black87,
       body: Center(
         child: GestureDetector(
-          child: Card(
+          child: Hero(
+            tag: 'IMG_${widget.images[currImgIdx].id}',
             child: Image.network(
               baseUrl + '${widget.images[currImgIdx].id}',
-            ),
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            )
           ),
           onVerticalDragStart: (DragStartDetails data) {
             start = data.globalPosition;
           },
           onVerticalDragUpdate: (DragUpdateDetails data) {
             final deltaX = start.dx - data.globalPosition.dx;
+            final deltaY = data.globalPosition.dy - start.dy;
+            start = data.globalPosition;
             if (deltaX > 100 && currImgIdx < widget.images.length - 1) {
-              setState(() {
-                currImgIdx++;
-                start = data.globalPosition;
-              });
+              setState(() {currImgIdx++;});
             } else if (deltaX < -100 && currImgIdx > 0) {
-              setState(() {
-                currImgIdx--;
-                start = data.globalPosition;
-              });
-            } else if ( data.globalPosition.dy - start.dy > 100) {
+              setState(() {currImgIdx--;});
+            } else if (deltaY > 100) {
               Navigator.pop(ctx);
             }
           },
@@ -176,8 +171,6 @@ class Img {
   Img({this.id});
 
   factory Img.fromJson(Map<String, dynamic> json) {
-    return Img(
-      id: json['id'],
-    );
+    return Img(id: json['id'],);
   }
 }
