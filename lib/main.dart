@@ -4,7 +4,7 @@ import 'dart:convert';
 
 void main() => runApp(App());
 
-final baseUrl = "https://picsum.photos/300/300?image=";
+final baseUrl = "https://picsum.photos/600/600?image=";
 
 class App extends StatelessWidget {
   @override
