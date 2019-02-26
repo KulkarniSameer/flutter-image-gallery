@@ -1,10 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 void main() => runApp(App());
 
-final baseUrl = "https://picsum.photos/600/600?image=";
+final baseUrl = "https://picsum.photos/200/200?image=";
 
 class App extends StatelessWidget {
   @override
@@ -120,50 +121,39 @@ class Details extends StatefulWidget {
   final int currImgIdx;
 
   @override
-  _DetailsState createState() => _DetailsState(currImgIdx: currImgIdx);
+  _DetailsState createState() => _DetailsState();
 }
 
 class _DetailsState extends State<Details> {
-  Offset start;
-  int currImgIdx;
-
-  _DetailsState({@required this.currImgIdx});
-
   @override
   Widget build(BuildContext ctx) {
-    final Img currImg = widget.images[currImgIdx];
     return SafeArea(child: Scaffold(
-      backgroundColor: Colors.black87,
-      body: Center(child: GestureDetector(
-        child: Hero(
-          tag: 'IMG_${currImg.id}',
-          child: Image.network(
-            baseUrl + '${currImg.id}',
-            fit: BoxFit.cover,
-            alignment: Alignment.center,
-          )
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(
+          color: Colors.white
         ),
-        onVerticalDragStart: (DragStartDetails data) {
-          start = data.globalPosition;
-        },
-        onVerticalDragUpdate: (DragUpdateDetails data) {
-          final deltaX = start.dx - data.globalPosition.dx;
-          final deltaY = data.globalPosition.dy - start.dy;
-
-          if (deltaX > 100 && currImgIdx < widget.images.length - 1) {
-            setState(() {
-              currImgIdx++;
-              start = data.globalPosition;
-            });
-          } else if (deltaX < -100 && currImgIdx > 0) {
-            setState(() {
-              currImgIdx--;
-              start = data.globalPosition;
-            });
-          } else if (deltaY > 100) {
-            Navigator.pop(ctx);
-          }
-        },)
+      ),
+      body: PageView.builder(
+        itemCount: widget.images.length,
+        controller: PageController(
+          initialPage: widget.currImgIdx,
+        ),
+        itemBuilder: (ctx, position) {
+          final Img currImg = widget.images[position];
+          return Center(
+            child: Hero(
+              tag: 'IMG_${currImg.id}',
+              child: Image.network(
+                baseUrl + '${currImg.id}',
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+                width: double.infinity,
+              )
+            ),
+          );
+        }
       ),
     ));
   }
