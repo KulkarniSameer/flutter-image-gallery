@@ -4,7 +4,7 @@ import 'dart:convert';
 
 void main() => runApp(App());
 
-final baseUrl = "https://picsum.photos/500/500?image=";
+final baseUrl = "https://picsum.photos/200/200?image=";
 
 class App extends StatelessWidget {
   @override
@@ -12,6 +12,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(primarySwatch: Colors.amber,),
       home: Home(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -44,43 +45,41 @@ class _HomeState extends State<Home> {
             bodyContentSliver = SliverGrid(
               delegate: SliverChildBuilderDelegate(
                 (BuildContext ctx, int index) {
-                  return GestureDetector(
-                    child: GridTile(
-                      child: Hero(
-                        tag: 'IMG_${images[index].id}',
-                        child: Image.network(
-                          baseUrl + '${images[index].id}',
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                        )
-                      ),
+                  return GestureDetector(child: GridTile(
+                    child: Hero(
+                      tag: 'IMG_${images[index].id}',
+                      child: Image.network(
+                        baseUrl + '${images[index].id}',
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
+                      )
                     ),
-                    onTap: () {
-                      Navigator.push(ctx,
-                        MaterialPageRoute(builder: (ctx) => Details(
-                            images: images, currImgIdx: index,)
-                        )
-                      );
-                    },
-                  );
+                  ),
+                  onTap: () {
+                    Navigator.push(ctx,
+                      MaterialPageRoute(builder: (ctx) => Details(
+                          images: images, currImgIdx: index,)
+                      )
+                    );
+                  },);
                 },
-                childCount: images.length,
+                childCount: images.length
               ),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 8.0,
                 mainAxisSpacing: 8.0,
-              ),
+              )
             );
           } else {
             bodyContentSliver = SliverToBoxAdapter(
               child: Container(
                 height: 500.0,
                 child: Center(
-                  child: snapshot.hasError ? Text("Oops! Something went wrong.")
+                  child: snapshot.hasError ? Text("Something went wrong.")
                     : CircularProgressIndicator(),
-                ),
-              ),
+                )
+              )
             );
           }
 
@@ -132,34 +131,39 @@ class _DetailsState extends State<Details> {
 
   @override
   Widget build(BuildContext ctx) {
+    final Img currImg = widget.images[currImgIdx];
     return SafeArea(child: Scaffold(
       backgroundColor: Colors.black87,
-      body: Center(
-        child: GestureDetector(
-          child: Hero(
-            tag: 'IMG_${widget.images[currImgIdx].id}',
-            child: Image.network(
-              baseUrl + '${widget.images[currImgIdx].id}',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            )
-          ),
-          onVerticalDragStart: (DragStartDetails data) {
-            start = data.globalPosition;
-          },
-          onVerticalDragUpdate: (DragUpdateDetails data) {
-            final deltaX = start.dx - data.globalPosition.dx;
-            final deltaY = data.globalPosition.dy - start.dy;
-            start = data.globalPosition;
-            if (deltaX > 100 && currImgIdx < widget.images.length - 1) {
-              setState(() {currImgIdx++;});
-            } else if (deltaX < -100 && currImgIdx > 0) {
-              setState(() {currImgIdx--;});
-            } else if (deltaY > 100) {
-              Navigator.pop(ctx);
-            }
-          },
-        )
+      body: Center(child: GestureDetector(
+        child: Hero(
+          tag: 'IMG_${currImg.id}',
+          child: Image.network(
+            baseUrl + '${currImg.id}',
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+          )
+        ),
+        onVerticalDragStart: (DragStartDetails data) {
+          start = data.globalPosition;
+        },
+        onVerticalDragUpdate: (DragUpdateDetails data) {
+          final deltaX = start.dx - data.globalPosition.dx;
+          final deltaY = data.globalPosition.dy - start.dy;
+
+          if (deltaX > 100 && currImgIdx < widget.images.length - 1) {
+            setState(() {
+              currImgIdx++;
+              start = data.globalPosition;
+            });
+          } else if (deltaX < -100 && currImgIdx > 0) {
+            setState(() {
+              currImgIdx--;
+              start = data.globalPosition;
+            });
+          } else if (deltaY > 100) {
+            Navigator.pop(ctx);
+          }
+        },)
       ),
     ));
   }
